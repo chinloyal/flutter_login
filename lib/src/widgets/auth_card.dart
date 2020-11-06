@@ -99,7 +99,8 @@ class AuthCardState extends State<AuthCard> with TickerProviderStateMixin {
     // replace 0 with minPositive to pass the test
     // https://github.com/flutter/flutter/issues/42527#issuecomment-575131275
     _cardOverlayHeightFactorAnimation =
-        Tween<double>(begin: double.minPositive, end: 1.0).animate(CurvedAnimation(
+        Tween<double>(begin: double.minPositive, end: 1.0)
+            .animate(CurvedAnimation(
       parent: _routeTransitionController,
       curve: Interval(.27272727, .5 /* ~250ms */, curve: Curves.linear),
     ));
@@ -356,6 +357,9 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
   TextEditingController _nameController;
   TextEditingController _passController;
   TextEditingController _confirmPassController;
+  TextEditingController _firstNameController;
+  TextEditingController _lastNameController;
+  TextEditingController _phoneController;
 
   var _isLoading = false;
   var _isSubmitting = false;
@@ -382,6 +386,9 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
     _nameController = TextEditingController(text: auth.email);
     _passController = TextEditingController(text: auth.password);
     _confirmPassController = TextEditingController(text: auth.confirmPassword);
+    _firstNameController = TextEditingController(text: auth.firstName);
+    _lastNameController = TextEditingController(text: auth.lastName);
+    _phoneController = TextEditingController(text: auth.phone);
 
     _loadingController = widget.loadingController ??
         (AnimationController(
@@ -474,6 +481,9 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
       error = await auth.onSignup(LoginData(
         name: auth.email,
         password: auth.password,
+        firstName: auth.firstName,
+        lastName: auth.lastName,
+        phone: auth.phone,
       ));
     }
 
@@ -540,7 +550,8 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildConfirmPasswordField(double width, LoginMessages messages, Auth auth) {
+  Widget _buildConfirmPasswordField(
+      double width, LoginMessages messages, Auth auth) {
     return AnimatedPasswordTextFormField(
       animatedWidth: width,
       enabled: auth.isSignup,
@@ -576,16 +587,19 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
           style: theme.textTheme.body1,
           textAlign: TextAlign.left,
         ),
-        onPressed: buttonEnabled ? () {
-          // save state to populate email field on recovery card
-          _formKey.currentState.save();
-          widget.onSwitchRecoveryPassword();
-        } : null,
+        onPressed: buttonEnabled
+            ? () {
+                // save state to populate email field on recovery card
+                _formKey.currentState.save();
+                widget.onSwitchRecoveryPassword();
+              }
+            : null,
       ),
     );
   }
 
-  Widget _buildSubmitButton(ThemeData theme, LoginMessages messages, Auth auth) {
+  Widget _buildSubmitButton(
+      ThemeData theme, LoginMessages messages, Auth auth) {
     return ScaleTransition(
       scale: _buttonScaleAnimation,
       child: AnimatedButton(
@@ -596,7 +610,8 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSwitchAuthButton(ThemeData theme, LoginMessages messages, Auth auth) {
+  Widget _buildSwitchAuthButton(
+      ThemeData theme, LoginMessages messages, Auth auth) {
     return FadeIn(
       controller: _loadingController,
       offset: .5,
@@ -612,6 +627,112 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
         padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         textColor: theme.primaryColor,
+      ),
+    );
+  }
+
+  Widget _buildFirstName(ThemeData theme, Auth auth) {
+    final deviceSize = MediaQuery.of(context).size;
+    final cardWidth = min(deviceSize.width * 0.75, 360.0);
+    const cardPadding = 16.0;
+    final textFieldWidth = cardWidth - cardPadding * 2;
+    return ExpandableContainer(
+      backgroundColor: theme.accentColor,
+      controller: _switchAuthController,
+      initialState: auth.isLogin
+          ? ExpandableContainerState.shrunk
+          : ExpandableContainerState.expanded,
+      alignment: Alignment.topLeft,
+      color: theme.cardTheme.color,
+      width: min(MediaQuery.of(context).size.width * 0.75, 360.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10,
+      ),
+      onExpandCompleted: () => _postSwitchAuthController.forward(),
+      child: AnimatedTextFormField(
+        controller: _firstNameController,
+        width: textFieldWidth,
+        loadingController: _loadingController,
+        interval: _nameTextFieldLoadingAnimationInterval,
+        labelText: 'First Name',
+        prefixIcon: Icon(FontAwesomeIcons.solidUserCircle),
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) {
+          // FocusScope.of(context).requestFocus(_passwordFocusNode);
+        },
+        // validator: widget.emailValidator,
+        onSaved: (value) => auth.firstName = value,
+      ),
+    );
+  }
+
+  Widget _buildLastName(ThemeData theme, Auth auth) {
+    final deviceSize = MediaQuery.of(context).size;
+    final cardWidth = min(deviceSize.width * 0.75, 360.0);
+    const cardPadding = 16.0;
+    final textFieldWidth = cardWidth - cardPadding * 2;
+    return ExpandableContainer(
+      backgroundColor: theme.accentColor,
+      controller: _switchAuthController,
+      initialState: auth.isLogin
+          ? ExpandableContainerState.shrunk
+          : ExpandableContainerState.expanded,
+      alignment: Alignment.topLeft,
+      color: theme.cardTheme.color,
+      width: min(MediaQuery.of(context).size.width * 0.75, 360.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10,
+      ),
+      onExpandCompleted: () => _postSwitchAuthController.forward(),
+      child: AnimatedTextFormField(
+        controller: _lastNameController,
+        width: textFieldWidth,
+        loadingController: _loadingController,
+        interval: _nameTextFieldLoadingAnimationInterval,
+        labelText: 'Last Name',
+        prefixIcon: Icon(FontAwesomeIcons.solidUserCircle),
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) {
+          // FocusScope.of(context).requestFocus(_passwordFocusNode);
+        },
+        // validator: widget.emailValidator,
+        onSaved: (value) => auth.lastName = value,
+      ),
+    );
+  }
+
+  Widget _buildPhone(ThemeData theme, Auth auth) {
+    final deviceSize = MediaQuery.of(context).size;
+    final cardWidth = min(deviceSize.width * 0.75, 360.0);
+    const cardPadding = 16.0;
+    final textFieldWidth = cardWidth - cardPadding * 2;
+    return ExpandableContainer(
+      backgroundColor: theme.accentColor,
+      controller: _switchAuthController,
+      initialState: auth.isLogin
+          ? ExpandableContainerState.shrunk
+          : ExpandableContainerState.expanded,
+      alignment: Alignment.topLeft,
+      color: theme.cardTheme.color,
+      width: min(MediaQuery.of(context).size.width * 0.75, 360.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10,
+      ),
+      onExpandCompleted: () => _postSwitchAuthController.forward(),
+      child: AnimatedTextFormField(
+        controller: _phoneController,
+        width: textFieldWidth,
+        loadingController: _loadingController,
+        interval: _nameTextFieldLoadingAnimationInterval,
+        labelText: 'Phone',
+        prefixIcon: Icon(FontAwesomeIcons.solidUserCircle),
+        textInputAction: TextInputAction.next,
+        onFieldSubmitted: (value) {},
+        // validator: widget.emailValidator,
+        onSaved: (value) => auth.phone = value,
       ),
     );
   }
@@ -640,6 +761,12 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                _buildFirstName(theme, auth),
+                SizedBox(height: 20),
+                _buildLastName(theme, auth),
+                SizedBox(height: 20),
+                _buildPhone(theme, auth),
+                SizedBox(height: 20),
                 _buildNameField(textFieldWidth, messages, auth),
                 SizedBox(height: 20),
                 _buildPasswordField(textFieldWidth, messages, auth),
@@ -755,7 +882,8 @@ class _RecoverCardState extends State<_RecoverCard>
     }
   }
 
-  Widget _buildRecoverNameField(double width, LoginMessages messages, Auth auth) {
+  Widget _buildRecoverNameField(
+      double width, LoginMessages messages, Auth auth) {
     return AnimatedTextFormField(
       controller: _nameController,
       width: width,
@@ -780,10 +908,12 @@ class _RecoverCardState extends State<_RecoverCard>
   Widget _buildBackButton(ThemeData theme, LoginMessages messages) {
     return FlatButton(
       child: Text(messages.goBackButton),
-      onPressed: !_isSubmitting ? () {
-        _formRecoverKey.currentState.save();
-        widget.onSwitchLogin();
-      } : null,
+      onPressed: !_isSubmitting
+          ? () {
+              _formRecoverKey.currentState.save();
+              widget.onSwitchLogin();
+            }
+          : null,
       padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       textColor: theme.primaryColor,
