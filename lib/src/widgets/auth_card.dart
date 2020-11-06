@@ -516,7 +516,7 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
       loadingController: _loadingController,
       interval: _nameTextFieldLoadingAnimationInterval,
       labelText: messages.usernameHint,
-      prefixIcon: Icon(FontAwesomeIcons.solidUserCircle),
+      prefixIcon: Icon(FontAwesomeIcons.envelope),
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
       onFieldSubmitted: (value) {
@@ -751,6 +751,12 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
       key: _formKey,
       child: Column(
         children: [
+          _buildFirstName(theme, auth),
+          SizedBox(height: 10),
+          _buildLastName(theme, auth),
+          SizedBox(height: 10),
+          _buildPhone(theme, auth),
+          SizedBox(height: 10),
           Container(
             padding: EdgeInsets.only(
               left: cardPadding,
@@ -762,12 +768,6 @@ class _LoginCardState extends State<_LoginCard> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 _buildNameField(textFieldWidth, messages, auth),
-                SizedBox(height: 10),
-                _buildFirstName(theme, auth),
-                SizedBox(height: 10),
-                _buildLastName(theme, auth),
-                SizedBox(height: 10),
-                _buildPhone(theme, auth),
                 SizedBox(height: 20),
                 _buildPasswordField(textFieldWidth, messages, auth),
                 SizedBox(height: 10),
